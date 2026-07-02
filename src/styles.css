@@ -70,6 +70,29 @@ body {
   box-shadow: inset 3px 0 0 #09c8f8;
 }
 
+.range-tabs {
+  display: inline-flex;
+  width: fit-content;
+  gap: 0.25rem;
+  border: 1px solid #26333b;
+  border-radius: 8px;
+  background: #071014;
+  padding: 0.25rem;
+}
+
+.range-tabs button {
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  color: #a1a1aa;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.range-tabs button.active {
+  background: #09c8f8;
+  color: #041014;
+}
+
 .primary-button,
 .icon-button {
   display: inline-flex;
@@ -102,6 +125,18 @@ body {
   font-size: 0.75rem;
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+.live-row {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr) 4.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid #26333b;
+  border-radius: 6px;
+  background: #071014;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.825rem;
 }
 
 .data-table {

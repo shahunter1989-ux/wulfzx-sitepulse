@@ -2,7 +2,14 @@ import cors from "cors";
 import express from "express";
 import morgan from "morgan";
 import cron from "node-cron";
-import { all, get, getSiteByTrackingKey, getSites, run } from "./db.js";
+import { db, getSiteByTrackingKey, getSites, persistDb } from "./db.js";
+import {
+  getAnalyticsSummary,
+  getLiveVisitors,
+  getOverviewSummary,
+  normalizeRange,
+  recordTrackingEvent,
+} from "./analytics.js";
 import { getUptimeSummary, runAllUptimeChecks } from "./monitor.js";
 
 const app = express();
@@ -30,25 +37,38 @@ app.get("/tracker.js", (_req, res) => {
 
   var origin = new URL(script.src).origin;
   var visitorKey = "wulfzx_sitepulse_visitor";
+  var sessionKey = "wulfzx_sitepulse_session_" + site;
   var visitor = localStorage.getItem(visitorKey);
   if (!visitor) {
     visitor = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
     localStorage.setItem(visitorKey, visitor);
   }
+  var session = sessionStorage.getItem(sessionKey);
+  if (!session) {
+    session = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+    sessionStorage.setItem(sessionKey, session);
+  }
 
-  fetch(origin + "/api/track/" + encodeURIComponent(site), {
+  function send(eventType) {
+    fetch(origin + "/api/track/" + encodeURIComponent(site), {
     method: "POST",
     keepalive: true,
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      eventType: "pageview",
+      eventType: eventType,
       path: location.pathname + location.search,
       referrer: document.referrer,
       visitorId: visitor,
+      sessionId: session,
       screen: screen.width + "x" + screen.height,
       language: navigator.language
     })
-  }).catch(function () {});
+    }).catch(function () {});
+  }
+
+  send("pageview");
+  setInterval(function () { send("heartbeat"); }, 25000);
+  addEventListener("pagehide", function () { send("exit"); });
 })();`);
 });
 
@@ -70,61 +90,23 @@ app.post("/api/track/:trackingKey", (req, res) => {
   const site = getSiteByTrackingKey(req.params.trackingKey);
   if (!site) return res.status(404).json({ error: "Unknown tracking key" });
 
-  run(`
-    INSERT INTO analytics_events
-    (site_id, event_type, path, referrer, user_agent, visitor_id, screen, language)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `, [
-    site.id,
-    req.body.eventType || "pageview",
-    req.body.path || "/",
-    req.body.referrer || "",
-    req.get("user-agent") || "",
-    req.body.visitorId || "",
-    req.body.screen || "",
-    req.body.language || "",
-  ]);
+  recordTrackingEvent(db, site.id, req.body, req.get("user-agent") || "");
+  persistDb();
 
   res.json({ ok: true });
 });
 
+app.get("/api/analytics/overview", (req, res) => {
+  res.json(getOverviewSummary(db, normalizeRange(req.query.range)));
+});
+
 app.get("/api/analytics/:siteId", (req, res) => {
   const siteId = Number(req.params.siteId);
-  const totals = get(`
-    SELECT
-      COUNT(*) as pageviews,
-      COUNT(DISTINCT visitor_id) as visitors
-    FROM analytics_events
-    WHERE site_id = ? AND created_at >= datetime('now', '-7 days')
-  `, [siteId]);
+  res.json(getAnalyticsSummary(db, siteId, normalizeRange(req.query.range)));
+});
 
-  const timeline = all(`
-    SELECT strftime('%m-%d %H:00', created_at) as label, COUNT(*) as pageviews
-    FROM analytics_events
-    WHERE site_id = ? AND created_at >= datetime('now', '-24 hours')
-    GROUP BY label
-    ORDER BY MIN(created_at)
-  `, [siteId]);
-
-  const topPaths = all(`
-    SELECT COALESCE(NULLIF(path, ''), '/') as path, COUNT(*) as views
-    FROM analytics_events
-    WHERE site_id = ? AND created_at >= datetime('now', '-7 days')
-    GROUP BY path
-    ORDER BY views DESC
-    LIMIT 8
-  `, [siteId]);
-
-  const referrers = all(`
-    SELECT COALESCE(NULLIF(referrer, ''), 'Direct') as referrer, COUNT(*) as visits
-    FROM analytics_events
-    WHERE site_id = ? AND created_at >= datetime('now', '-7 days')
-    GROUP BY referrer
-    ORDER BY visits DESC
-    LIMIT 8
-  `, [siteId]);
-
-  res.json({ totals, timeline, topPaths, referrers });
+app.get("/api/live-visitors/:siteId", (req, res) => {
+  res.json(getLiveVisitors(db, Number(req.params.siteId)));
 });
 
 app.use(express.static("dist"));

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
+import { ensureAnalyticsSchema } from "./analytics.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.DATA_DIR || path.join(__dirname, "..", "data");
@@ -68,6 +69,7 @@ db.exec(`
     FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
   );
 `);
+ensureAnalyticsSchema(db);
 persistDb();
 
 const seedSites = [

@@ -54,6 +54,22 @@ export function getUptimeSummary(siteId) {
     `, [siteId])
     .reverse();
 
+  const recentFailures = all(`
+      SELECT status_code, response_ms, error, checked_at
+      FROM uptime_checks
+      WHERE site_id = ? AND status = 'down'
+      ORDER BY checked_at DESC, id DESC
+      LIMIT 5
+    `, [siteId]);
+
+  const slowest = all(`
+      SELECT status, status_code, response_ms, checked_at
+      FROM uptime_checks
+      WHERE site_id = ? AND response_ms IS NOT NULL
+      ORDER BY response_ms DESC, checked_at DESC
+      LIMIT 5
+    `, [siteId]);
+
   const uptimePct = stats.total ? Math.round((stats.up_count / stats.total) * 10000) / 100 : null;
-  return { latest, uptimePct, avgResponseMs: stats.avg_response_ms, history };
+  return { latest, uptimePct, avgResponseMs: stats.avg_response_ms, history, recentFailures, slowest };
 }
