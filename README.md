@@ -118,3 +118,5 @@ data/sitepulse.db
 ```
 
 Delete that file only if you want to reset all uptime checks and analytics events.
+
+On Railway, set `DATA_DIR=/data` so the SQLite database uses the mounted persistent volume.

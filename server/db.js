@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import initSqlJs from "sql.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, "..", "data");
+const dataDir = process.env.DATA_DIR || path.join(__dirname, "..", "data");
 fs.mkdirSync(dataDir, { recursive: true });
 const dbPath = path.join(dataDir, "sitepulse.db");
 
