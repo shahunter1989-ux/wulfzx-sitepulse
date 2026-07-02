@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: #071014;
+}
+
+body {
+  margin: 0;
+  background: #071014;
+}
+
+.panel {
+  border: 1px solid #26333b;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #111a20 0%, #0f171c 100%);
+  box-shadow: 0 16px 44px rgb(0 0 0 / 0.24);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.section-title h2 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f4f4f5;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  border-radius: 6px;
+  padding: 0.7rem 0.75rem;
+  color: #a1a1aa;
+  font-size: 0.875rem;
+}
+
+.sidebar-item.active {
+  background: #10181d;
+  color: #f4f4f5;
+  border: 1px solid #26333b;
+}
+
+.site-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.7rem;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: #d4d4d8;
+  text-align: left;
+}
+
+.site-button:hover,
+.site-button.selected {
+  border-color: #26333b;
+  background: #10181d;
+}
+
+.site-button.selected {
+  box-shadow: inset 3px 0 0 #09c8f8;
+}
+
+.primary-button,
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #16c7ee66;
+  background: #09c8f8;
+  color: #041014;
+  padding: 0.68rem 0.9rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.icon-button {
+  background: #122229;
+  color: #dff8ff;
+}
+
+.script-box {
+  max-height: 9.5rem;
+  overflow: auto;
+  border-radius: 6px;
+  border: 1px solid #26333b;
+  background: #071014;
+  padding: 0.9rem;
+  color: #a7f3d0;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.data-table td {
+  border-bottom: 1px solid #26333b;
+  padding: 0.8rem 1rem;
+  color: #d4d4d8;
+}
+
+.data-table td:last-child {
+  width: 5rem;
+  text-align: right;
+  color: #09c8f8;
+  font-weight: 700;
+}
