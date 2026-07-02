@@ -24,7 +24,7 @@ import {
 } from "recharts";
 import "./styles.css";
 
-const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
+const apiBase = import.meta.env.VITE_API_BASE_URL || "";
 
 function statusTone(status) {
   if (status === "up") return "text-mint bg-mint/10 border-mint/30";
