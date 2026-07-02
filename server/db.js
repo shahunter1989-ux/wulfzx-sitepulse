@@ -73,6 +73,7 @@ persistDb();
 const seedSites = [
   ["Wulfzx Main Website", "https://wzxu.pro", "wzxu-pro"],
   ["Wulfzx 76 Guide", "https://wzxu76.pro", "wzxu76-pro"],
+  ["Duck Duck Nuke", "https://shahunter1989-ux.github.io/duck-duck-nuke/?v=launch-check", "duck-duck-nuke"],
 ];
 
 for (const site of seedSites) {
