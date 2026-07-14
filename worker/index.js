@@ -381,7 +381,18 @@ function grouped(events, labelFn) {
 }
 
 function sitePulseObject(env) {
-  return env.SITEPULSE.get(env.SITEPULSE.idFromName("global"));
+  if (env.SITEPULSE) return env.SITEPULSE.get(env.SITEPULSE.idFromName("global"));
+
+  globalThis.__SITEPULSE_MEMORY__ ||= { data: null };
+  globalThis.__SITEPULSE_MEMORY_DO__ ||= new SitePulseDO({
+    storage: {
+      get: async () => globalThis.__SITEPULSE_MEMORY__.data,
+      put: async (_key, value) => {
+        globalThis.__SITEPULSE_MEMORY__.data = value;
+      },
+    },
+  });
+  return globalThis.__SITEPULSE_MEMORY_DO__;
 }
 
 export default {
