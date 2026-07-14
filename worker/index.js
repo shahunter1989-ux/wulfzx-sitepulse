@@ -23,11 +23,18 @@ const RANGE_MS = {
   all: null,
 };
 
+const QA_PROJECTS = [
+  { key: "wzxu76", name: "Wulfzx 76 Guide", status: "Live QA", url: "https://wzxu76.pro" },
+  { key: "duck-duck-nuke", name: "Duck Duck Nuke", status: "Launch check", url: "https://shahunter1989-ux.github.io/duck-duck-nuke/?v=launch-check" },
+  { key: "wzx-pong", name: "WZX Pong", status: "Playable", url: "https://shahunter1989-ux.github.io/wzx-pong/" },
+  { key: "duck-fly", name: "How Far Will Your Duck Fly", status: "Playable", url: "https://shahunter1989-ux.github.io/how-far-will-your-duck-fly/" },
+];
+
 const jsonHeaders = {
   "content-type": "application/json; charset=utf-8",
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "GET,POST,OPTIONS",
-  "access-control-allow-headers": "content-type,user-agent",
+  "access-control-allow-headers": "authorization,content-type,user-agent",
 };
 
 function json(data, init = {}) {
@@ -135,6 +142,8 @@ function createDefaultData() {
     checks: [],
     events: [],
     sessions: {},
+    qaReports: [],
+    quickBugs: [],
     nextCheckId: 1,
     nextEventId: 1,
   };
@@ -186,6 +195,8 @@ export class SitePulseDO {
     stored.sessions ||= {};
     stored.checks ||= [];
     stored.events ||= [];
+    stored.qaReports ||= [];
+    stored.quickBugs ||= [];
     stored.nextCheckId ||= stored.checks.length + 1;
     stored.nextEventId ||= stored.events.length + 1;
     return stored;
@@ -209,6 +220,99 @@ export class SitePulseDO {
         trackingScript: `<script src="${origin}/tracker.js" data-site="${site.tracking_key}"></script>`,
         uptime: summarizeUptime(data.checks.filter((check) => check.site_id === site.id)),
       })));
+    }
+
+    if (url.pathname === "/api/qa/projects" && request.method === "GET") {
+      return json(QA_PROJECTS);
+    }
+
+    if (url.pathname === "/api/qa/bugs" && request.method === "POST") {
+      const payload = await request.json().catch(() => ({}));
+      const error = requireQaFields(payload, ["reporterName", "project", "description"]);
+      if (error) return json({ error }, { status: 400 });
+      const quickBug = {
+        id: crypto.randomUUID(),
+        reporter_name: payload.reporterName,
+        project: payload.project,
+        severity: payload.severity || "medium",
+        status: "new",
+        description: payload.description,
+        uploads: summarizeUploads(payload.uploads),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      data.quickBugs.unshift(quickBug);
+      await this.save(data);
+      return json({ ok: true, id: quickBug.id });
+    }
+
+    if (url.pathname === "/api/qa/reports" && request.method === "POST") {
+      const payload = await request.json().catch(() => ({}));
+      const error = requireQaFields(payload, ["testerName", "project", "summary"]);
+      if (error) return json({ error }, { status: 400 });
+      const report = {
+        id: crypto.randomUUID(),
+        tester_name: payload.testerName,
+        tester_contact: payload.testerContact || "",
+        project: payload.project,
+        build_version: payload.buildVersion || "",
+        device: payload.device || "",
+        browser: payload.browser || "",
+        severity: payload.severity || "medium",
+        status: "new",
+        summary: payload.summary,
+        feedback: payload.feedback || "",
+        final_notes: payload.finalNotes || "",
+        uploads: summarizeUploads(payload.uploads),
+        qa_bug_items: (payload.bugs || []).filter((bug) => bug.title).map((bug) => ({
+          id: crypto.randomUUID(),
+          title: bug.title,
+          severity: bug.severity || "medium",
+          steps: bug.steps || "",
+          expected: bug.expected || "",
+          actual: bug.actual || "",
+          created_at: new Date().toISOString(),
+        })),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      data.qaReports.unshift(report);
+      await this.save(data);
+      return json({ ok: true, id: report.id });
+    }
+
+    if (url.pathname === "/api/admin/login" && request.method === "POST") {
+      const payload = await request.json().catch(() => ({}));
+      const password = payload.password || "";
+      const expected = globalThis.ADMIN_PASSWORD || "wulfzx-admin";
+      if (password !== expected) return json({ error: "Invalid admin password" }, { status: 401 });
+      return json({ ok: true, token: workerAdminToken(expected) });
+    }
+
+    if (url.pathname === "/api/qa/reports" && request.method === "GET") {
+      if (!workerIsAdmin(request)) return json({ error: "Admin login required" }, { status: 401 });
+      const project = url.searchParams.get("project");
+      const severity = url.searchParams.get("severity");
+      const status = url.searchParams.get("status");
+      const filter = (row) => (!project || row.project === project) && (!severity || row.severity === severity) && (!status || row.status === status);
+      return json({
+        reports: data.qaReports.filter(filter).slice(0, 100),
+        quickBugs: data.quickBugs.filter(filter).slice(0, 100),
+      });
+    }
+
+    const qaPatchMatch = url.pathname.match(/^\/api\/qa\/reports\/(.+)$/);
+    if (qaPatchMatch && request.method === "PATCH") {
+      if (!workerIsAdmin(request)) return json({ error: "Admin login required" }, { status: 401 });
+      const payload = await request.json().catch(() => ({}));
+      const report = data.qaReports.find((item) => item.id === qaPatchMatch[1]);
+      if (report) {
+        if (payload.status) report.status = payload.status;
+        if (payload.severity) report.severity = payload.severity;
+        report.updated_at = new Date().toISOString();
+        await this.save(data);
+      }
+      return json({ ok: true });
     }
 
     if (url.pathname === "/api/checks/run" && request.method === "POST") {
@@ -349,6 +453,29 @@ export class SitePulseDO {
 
 function isLive(session) {
   return !session.ended_at && Date.now() - new Date(session.last_seen_at).getTime() <= 60000;
+}
+
+function requireQaFields(payload, fields) {
+  const missing = fields.filter((field) => !String(payload[field] || "").trim());
+  return missing.length ? `Missing required fields: ${missing.join(", ")}` : "";
+}
+
+function summarizeUploads(files = []) {
+  return files.map((file) => ({
+    name: file.name,
+    type: file.type,
+    size: file.size || Math.round((file.data || "").length * 0.75),
+  })).filter((file) => file.name);
+}
+
+function workerAdminToken(password) {
+  return `gitlip-preview-${password}`;
+}
+
+function workerIsAdmin(request) {
+  const expected = globalThis.ADMIN_PASSWORD || "wulfzx-admin";
+  const token = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  return token === workerAdminToken(expected);
 }
 
 function countRows(items, keyFn, keyName, valueName) {

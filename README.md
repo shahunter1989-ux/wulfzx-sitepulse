@@ -1,9 +1,10 @@
 # Wulfzx SitePulse
 
-Wulfzx SitePulse is a two-part dashboard for Wulfzx.Underground:
+Wulfzx SitePulse is a three-part dashboard for Wulfzx.Underground:
 
 - Part 1: Uptime Monitor
 - Part 2: Traffic Analytics
+- Part 3: QA Portal
 
 On first launch, the SQLite database is created automatically and preloaded with:
 
@@ -20,6 +21,7 @@ On first launch, the SQLite database is created automatically and preloaded with
 - Separate analytics tracking script for each website
 - Copy tracking script button
 - Traffic analytics ingestion endpoint
+- QA tester reports, quick bug reports, and staff report console
 
 ## Beginner-Friendly Setup
 
@@ -54,6 +56,28 @@ The backend runs at:
 ```text
 http://localhost:4000
 ```
+
+## QA Portal
+
+The QA Portal adds the Wulfzx.Underground QA flow beside SitePulse:
+
+- `/qa` - full QA tester report form
+- `/bug` - quick public bug report form
+- `/admin/login` - staff login
+- `/admin/reports` - private report console
+
+For local development, QA reports are stored in the same SQLite database and uploads are saved under `data/qa-uploads`. For production, use Supabase/Postgres and Supabase Storage.
+
+Required production environment variables:
+
+```text
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+ADMIN_PASSWORD=choose-a-strong-password
+PUBLIC_BASE_URL=https://your-dashboard-domain.example.com
+```
+
+Create the Supabase tables and private upload bucket with `supabase-schema.sql`.
 
 ## Tracking Scripts
 

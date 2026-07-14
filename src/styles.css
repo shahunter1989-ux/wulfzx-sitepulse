@@ -157,3 +157,103 @@ body {
   color: #09c8f8;
   font-weight: 700;
 }
+
+.qa-action {
+  display: flex;
+  min-height: 10rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: #d4d4d8;
+  text-align: left;
+}
+
+.qa-action strong {
+  color: #f4f4f5;
+}
+
+.qa-action span {
+  color: #71717a;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.form-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.form-field span {
+  color: #a1a1aa;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea,
+.report-row select {
+  width: 100%;
+  border: 1px solid #26333b;
+  border-radius: 6px;
+  background: #071014;
+  color: #f4f4f5;
+  padding: 0.7rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.form-field textarea {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+.form-span,
+.form-submit {
+  grid-column: 1 / -1;
+}
+
+.bug-item {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid #26333b;
+  border-radius: 8px;
+  background: #071014;
+  padding: 1rem;
+}
+
+@media (min-width: 900px) {
+  .bug-item {
+    grid-template-columns: 1fr 12rem;
+  }
+
+  .bug-item .form-field:nth-child(n + 3) {
+    grid-column: 1 / -1;
+  }
+}
+
+.report-row {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+@media (min-width: 768px) {
+  .report-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+}

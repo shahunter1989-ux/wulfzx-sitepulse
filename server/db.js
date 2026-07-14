@@ -70,6 +70,48 @@ db.exec(`
   );
 `);
 ensureAnalyticsSchema(db);
+db.run(`
+  CREATE TABLE IF NOT EXISTS qa_reports (
+    id TEXT PRIMARY KEY,
+    tester_name TEXT NOT NULL,
+    tester_contact TEXT,
+    project TEXT NOT NULL,
+    build_version TEXT,
+    device TEXT,
+    browser TEXT,
+    severity TEXT NOT NULL DEFAULT 'medium',
+    status TEXT NOT NULL DEFAULT 'new',
+    summary TEXT NOT NULL,
+    feedback TEXT,
+    final_notes TEXT,
+    uploads_json TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS qa_bug_items (
+    id TEXT PRIMARY KEY,
+    report_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    severity TEXT NOT NULL DEFAULT 'medium',
+    steps TEXT,
+    expected TEXT,
+    actual TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS bug_reports (
+    id TEXT PRIMARY KEY,
+    reporter_name TEXT NOT NULL,
+    project TEXT NOT NULL,
+    severity TEXT NOT NULL DEFAULT 'medium',
+    status TEXT NOT NULL DEFAULT 'new',
+    description TEXT NOT NULL,
+    uploads_json TEXT NOT NULL DEFAULT '[]',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 persistDb();
 
 const seedSites = [
