@@ -10,6 +10,7 @@ On first launch, the SQLite database is created automatically and preloaded with
 
 - Wulfzx Main Website — https://wzxu.pro
 - Wulfzx 76 Guide — https://wzxu76.pro
+- Wulfzx Field Guide — https://wulfzx-field-guide.vercel.app/
 
 ## What It Includes
 

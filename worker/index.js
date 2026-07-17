@@ -14,6 +14,7 @@ const SEED_SITES = [
     url: "https://shahunter1989-ux.github.io/how-far-will-your-duck-fly/",
     tracking_key: "how-far-will-your-duck-fly",
   },
+  { id: 6, name: "Wulfzx Field Guide", url: "https://wulfzx-field-guide.vercel.app/", tracking_key: "wulfzx-field-guide" },
 ];
 
 const RANGE_MS = {
@@ -28,6 +29,7 @@ const QA_PROJECTS = [
   { key: "duck-duck-nuke", name: "Duck Duck Nuke", status: "Launch check", url: "https://shahunter1989-ux.github.io/duck-duck-nuke/?v=launch-check" },
   { key: "wzx-pong", name: "WZX Pong", status: "Playable", url: "https://shahunter1989-ux.github.io/wzx-pong/" },
   { key: "duck-fly", name: "How Far Will Your Duck Fly", status: "Playable", url: "https://shahunter1989-ux.github.io/how-far-will-your-duck-fly/" },
+  { key: "wulfzx-field-guide", name: "Wulfzx Field Guide", status: "Live QA", url: "https://wulfzx-field-guide.vercel.app/" },
 ];
 
 const jsonHeaders = {

@@ -120,6 +120,7 @@ const seedSites = [
   ["Duck Duck Nuke", "https://shahunter1989-ux.github.io/duck-duck-nuke/?v=launch-check", "duck-duck-nuke"],
   ["WZX Pong", "https://shahunter1989-ux.github.io/wzx-pong/", "wzx-pong"],
   ["How Far Will Your Duck Fly", "https://shahunter1989-ux.github.io/how-far-will-your-duck-fly/", "how-far-will-your-duck-fly"],
+  ["Wulfzx Field Guide", "https://wulfzx-field-guide.vercel.app/", "wulfzx-field-guide"],
 ];
 
 for (const site of seedSites) {
